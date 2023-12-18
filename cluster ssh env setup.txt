@@ -1,0 +1,119 @@
+hn0
+=========================
+    1  ssh 10.0.0.10
+    2  cd "ssl"
+    3  ssh 10.0.0.8
+    4  ssh 10.0.0.9
+    5  ssh hn1-testka
+    6  ssh hn1-testka
+    7  cat /etc/hosts
+    8  ls
+    9  mkdir ssl
+   10  cd ssl
+   11  ls
+   12  openssl req -new -newkey rsa:4096 -days 365 -x509 -subj "/CN=Kafka-Security-CA" -keyout ca-key -out ca-cert -nodes
+   13  openssl x509 -req -CA ca-cert -CAkey ca-key -in wn0-cert-sign-request -out wn0-cert-signed -days 365 -CAcreateserial -passin pass:"MyServerPassword123"
+   14  ls
+   15  openssl x509 -req -CA ca-cert -CAkey ca-key -in wn1-cert-sign-request -out wn1-cert-signed -days 365 -CAcreateserial -passin pass:"MyServerPassword123"
+   16  openssl x509 -req -CA ca-cert -CAkey ca-key -in wn2-cert-sign-request -out wn2-cert-signed -days 365 -CAcreateserial -passin pass:"MyServerPassword123"
+   17  ls
+   18  scp wn0-cert-signed sshuser@wn0-testka:~/ssl/cert-signed
+   19  scp wn1-cert-signed sshuser@wn1-testka:~/ssl/cert-signed
+   20  scp wn2-cert-signed sshuser@wn2-testka:~/ssl/cert-signed
+   21  scp ca-cert sshuser@wn0-testka:~/ssl/ca-cert
+   22  scp ca-cert sshuser@wn1-testka:~/ssl/ca-cert
+   23  scp ca-cert sshuser@wn2-testka:~/ssl/ca-cert
+   24  scp ca-cert sshuser@hn1-testka:~/ssl/ca-cert
+   25  history
+   26  ssh hn1-testka
+   27  history
+=========================
+
+hn1
+=======================
+    1  ls
+    2  mkdir ssl
+    3  keytool -keystore kafka.client.truststore.jks -alias CARoot -import -file ca-cert -storepass "MyClientPassword123" -keypass "MyClientPassword123" -noprompt
+    4  ls
+    5  cd ssl
+    6  keytool -keystore kafka.client.truststore.jks -alias CARoot -import -file ca-cert -storepass "MyClientPassword123" -keypass "MyClientPassword123" -noprompt
+    7  keytool -keystore kafka.client.keystore.jks -alias CARoot -import -file ca-cert -storepass "MyClientPassword123" -keypass "MyClientPassword123" -noprompt
+    8  ls
+    9  touch client-ssl-auth.properties
+   10  vim client-ssl-auth.properties 
+   11  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:2181 --create --topic topic1 --partitions 2 --replication-factor 2
+   12  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper :2181 --create --topic topic1 --partitions 2 --replication-factor 2
+   13  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper zk0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:2181 --create --topic topic1 --partitions 2 --replication-factor 2
+   14  /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9093 --topic topic1 --producer.config ~/ssl/client-ssl-auth.properties
+   15  /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9092 --topic topic1 --producer.config ~/ssl/client-ssl-auth.properties
+   16  /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9093 --topic topic1 --producer.config ~/ssl/client-ssl-auth.properties
+   17  /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh --bootstrap-server wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9093 --topic topic1 --consumer.config ~/ssl/client-ssl-auth.properties --from-beginning
+   18  /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh --bootstrap-server wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9093 --topic topic1 --consumer.config ~/ssl/client-ssl-auth.properties
+   19  /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh --bootstrap-server wn0-testka.4zvbmbd5jotejbl23zai00osca.lx.internal.cloudapp.net:9093 --topic topic1 --consumer.config ~/ssl/client-ssl-auth.properties --from-beginning
+   20  history
+=========================
+
+wn0
+
+    1  mkdir ssl
+    2  cd ssl
+    3  keytool -genkey -keystore kafka.server.keystore.jks -validity 365 -storepass "MyServerPassword123" -keypass "MyServerPassword123" -dname "CN=wn0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net" -storetype pkcs12
+    4  keytool -keystore kafka.server.keystore.jks -certreq -file cert-file -storepass "MyServerPassword123" -keypass "MyServerPassword123"
+    5  scp cert-file sshuser@hn0-testka:~/ssl/wn0-cert-sign-request
+    6  keytool -keystore kafka.server.truststore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    7  keytool -keystore kafka.server.keystore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    8  keytool -keystore kafka.server.keystore.jks -import -file cert-signed -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+
+=========================
+
+wn1
+
+    1  mkdir ssl
+    2  cd ssl
+    3  keytool -genkey -keystore kafka.server.keystore.jks -validity 365 -storepass "MyServerPassword123" -keypass "MyServerPassword123" -dname "CN=wn1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net" -storetype pkcs12
+    4  keytool -keystore kafka.server.keystore.jks -certreq -file cert-file -storepass "MyServerPassword123" -keypass "MyServerPassword123"
+    5  scp cert-file sshuser@hn0-testka:~/ssl/wn1-cert-sign-request
+    6  keytool -keystore kafka.server.truststore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    7  keytool -keystore kafka.server.keystore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    8  keytool -keystore kafka.server.keystore.jks -import -file cert-signed -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    9  history
+    
+    
+==========================
+
+wn2
+
+    1  mkdir ssl
+    2  cd ssl
+    3  keytool -genkey -keystore kafka.server.keystore.jks -validity 365 -storepass "MyServerPassword123" -keypass "MyServerPassword123" -dname "CN=wn2-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net" -storetype pkcs12
+    4  keytool -keystore kafka.server.keystore.jks -certreq -file cert-file -storepass "MyServerPassword123" -keypass "MyServerPassword123"
+    5  scp cert-file sshuser@hn0-testka:~/ssl/wn2-cert-sign-request
+    6  keytool -keystore kafka.server.truststore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    7  keytool -keystore kafka.server.keystore.jks -alias CARoot -import -file ca-cert -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    8  keytool -keystore kafka.server.keystore.jks -import -file cert-signed -storepass "MyServerPassword123" -keypass "MyServerPassword123" -noprompt
+    9  history
+    
+    
+    
+/etc/hosts
+
+127.0.0.1 localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+10.0.0.11 hn0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net hn0-testka hn0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.10 wn0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net wn0-testka wn0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.4 zk0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net zk0-testka zk0-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.5 zk1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net zk1-testka zk1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.6 zk3-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net zk3-testka zk3-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+	10.0.0.12	hn1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net	headnodehost	hn1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net.	headnodehost.	hn1-testk# SlaveNodeManager
+10.0.0.8 wn1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net wn1-testka wn1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.9 wn2-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net wn2-testka wn2-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.14 gw1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net gw1-testka gw1-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net. 
+10.0.0.13 gw3-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net gw3-testka gw3-testka.4503jg1d1t5uhk5ukczhmbfu2c.lx.internal.cloudapp.net.
+
