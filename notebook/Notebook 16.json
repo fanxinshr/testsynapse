@@ -1,0 +1,72 @@
+{
+	"name": "Notebook 16",
+	"properties": {
+		"folder": {
+			"name": "test"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "36f61dcb-4af9-444a-aea8-c838d5b7cbae"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from notebookutils import mssparkutils \r\n",
+					"\r\n",
+					"mssparkutils.fs.mount( \r\n",
+					"    \"abfss://log@testfansynapseadlsgen2.dfs.core.windows.net\", \r\n",
+					"    \"/test\", \r\n",
+					"    {\"LinkedService\":\"AzureDataLakeStorage1\"} \r\n",
+					") \r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"myid=mssparkutils.env.getJobId()\r\n",
+					"myid"
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,109 @@
+{
+	"name": "connectwithsynapsedatabase",
+	"properties": {
+		"folder": {
+			"name": "AccessDatabase"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testmpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0211df10-2f30-48b0-ab9a-ed86e33c955f"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testmpool",
+				"name": "testmpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testmpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"# Add required imports\r\n",
+					"import com.microsoft.spark.sqlanalytics\r\n",
+					"from com.microsoft.spark.sqlanalytics.Constants import Constants\r\n",
+					"from pyspark.sql.functions import col \r\n",
+					"\r\n",
+					"# Read from existing internal table\r\n",
+					"# test-synapse1-fan.sql.azuresynapse.net\r\n",
+					"# https://testsynapse12.dfs.core.windows.net\r\n",
+					"dfToReadFromTable = (spark.read.option(Constants.SERVER, \"test-synapse1-fan.sql.azuresynapse.net\")\r\n",
+					"    .option(Constants.TEMP_FOLDER, \"abfss://test@testsynapse12.dfs.core.windows.net/\")\r\n",
+					"    # .option(Constants.USER, \"sqladminuser\")\r\n",
+					"    # .option(Constants.PASSWORD, \"Pa$$w0rd1234\")\r\n",
+					"    .synapsesql(\"SynapseDedicatedSQLPool.dbo.Persons\")\r\n",
+					"    .select(\"*\")\r\n",
+					"    .limit(3)) \r\n",
+					"\r\n",
+					"# Show contents of the dataframe\r\n",
+					"dfToReadFromTable.show()\r\n",
+					"\r\n",
+					"print(dfToReadFromTable)\r\n",
+					"print(\"==================\")\r\n",
+					"dfToReadFromTable.printSchema()\r\n",
+					"\r\n",
+					"\r\n",
+					"print(dfToReadFromTable.limit(10))"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}

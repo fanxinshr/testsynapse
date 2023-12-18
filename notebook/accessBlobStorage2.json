@@ -1,0 +1,272 @@
+{
+	"name": "accessBlobStorage2",
+	"properties": {
+		"folder": {
+			"name": "AccessADLSGen2"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testsparkpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "9808a27b-82e1-4108-940d-ec236ce59023"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testsparkpool",
+				"name": "testsparkpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testsparkpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%pip install fsspec\r\n",
+					"%pip install adlfs"
+				],
+				"execution_count": 91
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"# Azure storage access info\r\n",
+					"blob_account_name = 'testsynpaseblobstorage' # replace with your blob name\r\n",
+					"blob_container_name = 'testcontainer' # replace with your container name\r\n",
+					"blob_relative_path = 'test/sample.csv' # replace with your relative folder path\r\n",
+					"linked_service_name = 'AzureBlobStorage11' # replace with your linked service name\r\n",
+					"\r\n",
+					"blob_sas_token = mssparkutils.credentials.getConnectionStringOrCreds(linked_service_name)\r\n",
+					"\r\n",
+					"# Allow SPARK to access from Blob remotely\r\n",
+					"\r\n",
+					"wasb_path = 'wasbs://%s@%s.blob.core.windows.net/%s' % (blob_container_name, blob_account_name, blob_relative_path)\r\n",
+					"\r\n",
+					"spark.conf.set('fs.azure.sas.%s.%s.blob.core.windows.net' % (blob_container_name, blob_account_name), blob_sas_token)\r\n",
+					"# print('Remote blob path: ' + wasb_path)\r\n",
+					"\r\n",
+					"import fsspec\r\n",
+					"\r\n",
+					"# 'abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/'\r\n",
+					"\r\n",
+					"fs = fsspec.filesystem('abfss')\r\n",
+					"print(fs.ls(\".\"))\r\n",
+					"print(fs.ls(\"test\"))\r\n",
+					"fs.ls(\"abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/\", blob_sas_token)\r\n",
+					""
+				],
+				"execution_count": 92
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import fsspec\r\n",
+					"\r\n",
+					"# 'abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/'\r\n",
+					"\r\n",
+					"fs = fsspec.filesystem('abfss')\r\n",
+					"print(fs.ls(\".\"))\r\n",
+					"print(fs.ls(\"test\"))\r\n",
+					"\r\n",
+					"\r\n",
+					"fsspec\r\n",
+					"\r\n",
+					"fs.ls(\"abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/\")\r\n",
+					"\r\n",
+					"# fsspec.dircache()\r\n",
+					"\r\n",
+					"# print(fs.ls('abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/'))\r\n",
+					"\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"\r\n",
+					"# https://testfansynapseadlsgen2.blob.core.windows.net/log/sample.csv\r\n",
+					"myfile = 'abfss://log@testfansynapseadlsgen2.dfs.core.windows.net/'\r\n",
+					"mssparkutils.fs.ls(myfile)\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import fsspec\r\n",
+					"import pandas\r\n",
+					"\r\n",
+					"adls_account_name = '' #Provide exact ADLS account name\r\n",
+					"sas_key = TokenLibrary.getConnectionString(<LinkedServiceName>)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = spark.read.load('wasbs://testcontainer@testsynpaseblobstorage.blob.core.windows.net/test/sample.csv', format='csv')"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.show()"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.select(\"_c1\").write.format(\"parquet\").save(\"wasbs://testcontainer@testsynpaseblobstorage.blob.core.windows.net/test/c1.parquet\")"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import fsspec\r\n",
+					"storage_options={'account_name': 'testfansynapseadlsgen2', 'tenant_id': '72f988bf-86f1-41af-91ab-2d7cd011db47', 'client_id': '494ab310-3b17-4792-8b3d-31d1f15f0c52', 'client_secret': 'G6k8Q~syYxNBy4oVrarc.AZ-ZXpjhCOc4H6V-bWw'}\r\n",
+					"fs = fsspec.filesystem(\"abfss\",**storage_options)\r\n",
+					"print(fs.ls(\".\"))\r\n",
+					"print(fs.ls(\"log\"))"
+				],
+				"execution_count": 93
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import glob\r\n",
+					"\r\n",
+					"# wasbs://testcontainer@testsynpaseblobstorage.blob.core.windows.net/test/\r\n",
+					"\r\n",
+					"filename = \"wasbs://testcontainer@testsynpaseblobstorage.blob.core.windows.net/test/\"\r\n",
+					"\r\n",
+					"l = [pd.read_csv(filename) for filename in glob.glob(\"*.csv\")]\r\n",
+					"print(l)\r\n",
+					""
+				]
+			}
+		]
+	}
+}

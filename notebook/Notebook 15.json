@@ -1,0 +1,59 @@
+{
+	"name": "Notebook 15",
+	"properties": {
+		"folder": {
+			"name": "test"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "4fe49784-9853-4e0a-bf34-0e532537f018"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"log4jLogger = spark.sparkContext._jvm.org.apache.log4j  \r\n",
+					"\r\n",
+					"customLogs = log4jLogger.LogManager.getLogger(\"CustomLogs\")  \r\n",
+					"\r\n",
+					" \r\n",
+					"\r\n",
+					"customLogs.info(\"TestingA INFO Logs\") \r\n",
+					"\r\n",
+					"customLogs.warn(\"TestingA WARN Logs\") \r\n",
+					"\r\n",
+					"customLogs.error(\"TestingA ERROR Logs\") \r\n",
+					"\r\n",
+					"print(\"This message will be in stdout instead of log4j\") "
+				]
+			}
+		]
+	}
+}

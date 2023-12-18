@@ -1,0 +1,17 @@
+{
+	"name": "SelectTop100",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [CONSTRAINT_CATALOG]\n,[CONSTRAINT_SCHEMA]\n,[CONSTRAINT_NAME]\n,[CHECK_CLAUSE]\n FROM [INFORMATION_SCHEMA].[CHECK_CONSTRAINTS]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "test",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

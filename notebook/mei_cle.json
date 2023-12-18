@@ -1,0 +1,336 @@
+{
+	"name": "mei_cle",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "47df7a4f-b358-4b08-b81f-6e2fca6be1eb"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pyspark.sql.functions as F\r\n",
+					"import datetime\r\n",
+					"from azure.storage.blob import BlobServiceClient"
+				],
+				"execution_count": 57
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run modules/data_cleansing_common"
+				],
+				"execution_count": 58
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#ETL業務日付を取得処理\r\n",
+					"def select_gyomu_dt():\r\n",
+					"    try:\r\n",
+					"        # ログ出力共通関数を実行し、処理開始ログを出力する。\r\n",
+					"        log('I0001', 'select_gyomu_dt')\r\n",
+					"\r\n",
+					"        #テーブル読み込み共通関数を実行し、結果を変数「etl_gyomu_dt_data」に設定する。\r\n",
+					"        etl_gyomu_dt_data = load_table(pi_link_service_name, 'ETL_GYOMU_DT')\r\n",
+					"        \r\n",
+					"        #カラム選択\r\n",
+					"        etl_gyomu_data = etl_gyomu_dt_data.select(col('GYOMU_DT')).collect()[0]['GYOMU_DT']\r\n",
+					"\r\n",
+					"        #ログ出力共通関数を実行し、処理終了ログを出力する。\r\n",
+					"        log('I0002', 'select_gyomu_dt')\r\n",
+					"\r\n",
+					"        #処理終了\r\n",
+					"        return etl_gyomu_data\r\n",
+					"    except Exception as e:\r\n",
+					"        log('E0001', 'select_gyomu_dt', type(e), e)\r\n",
+					"        raise e"
+				],
+				"execution_count": 62
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#対象ファイル取得処理\r\n",
+					"def load_target_file(etl_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'load_target_file')\r\n",
+					"        #読み込み対象ファイルのスキーマを定義し、変数「schema_columns」に設定する。\r\n",
+					"        # スキーマ項目\r\n",
+					"        schema_columns = StructType([\r\n",
+					"            StructField('IDI', StringType(), False),\r\n",
+					"            StructField('RCYCL_ID', StringType(), False),\r\n",
+					"            StructField('SET_BTMSK', StringType(), True),\r\n",
+					"            StructField('MEI_ID', StringType(), False),\r\n",
+					"            StructField('PROC_CD', StringType(), True),\r\n",
+					"            StructField('EKIMU_KIKI_BP_CD', StringType(), True),\r\n",
+					"            StructField('KISHU_CD', StringType(), True),\r\n",
+					"            StructField('EKIMU_KIKI_ID', StringType(), True),\r\n",
+					"            StructField('EKIMU_KIKI_START4', StringType(), True),\r\n",
+					"            StructField('EKIMU_KIKI_END4', StringType(), True),\r\n",
+					"            StructField('IC_NUM', StringType(), True),\r\n",
+					"            StructField('YMD', StringType(), True),\r\n",
+					"            StructField('TM', StringType(), True),\r\n",
+					"            StructField('FNC_CLS', StringType(), True),\r\n",
+					"            StructField('CARD_CTL_CD', StringType(), True),\r\n",
+					"            StructField('USE_EKI1', StringType(), True),\r\n",
+					"            StructField('USE_EKI2', StringType(), True),\r\n",
+					"            StructField('PROC_CLS', StringType(), True),\r\n",
+					"            StructField('USE_EKI_CLS', StringType(), True),\r\n",
+					"            StructField('OTHER_EXAM_TICT_PSSG', StringType(), True),\r\n",
+					"            StructField('OLD_CDIDI', StringType(), True),\r\n",
+					"            StructField('OLD_CARD_RCYCL_ID', StringType(), True),\r\n",
+					"            StructField('SUM_USE_GK', StringType(), True),\r\n",
+					"            StructField('SF_LOG_ID', StringType(), True),\r\n",
+					"            StructField('BP_CD_SF1', StringType(), True),\r\n",
+					"            StructField('USE_GK_SF1', StringType(), True),\r\n",
+					"            StructField('ZAN_GK_SF1', StringType(), True),\r\n",
+					"            StructField('PAYM_KBN_SF1', StringType(), True),\r\n",
+					"            StructField('PLN_SKBT_CD', StringType(), True),\r\n",
+					"            StructField('SETT_BP_CD', StringType(), True),\r\n",
+					"            StructField('DEPO_GK', StringType(), True),\r\n",
+					"            StructField('PAYM_KBN_DEPO', StringType(), True),\r\n",
+					"            StructField('CRSPND_MIRYO_FLG', StringType(), True),\r\n",
+					"            StructField('SF_DNM_CD', StringType(), True),\r\n",
+					"            StructField('SAL_CTL_YMD', StringType(), True),\r\n",
+					"            StructField('DISCNT1_CMPNY1', StringType(), True),\r\n",
+					"            StructField('DISCNT1_CMPNY2', StringType(), True),\r\n",
+					"            StructField('DISCNT2_CMPNY2', StringType(), True),\r\n",
+					"            StructField('DISCNT2_CMPNY3', StringType(), True),\r\n",
+					"            StructField('DISCNT3_CMPNY3', StringType(), True),\r\n",
+					"            StructField('DISCNT3_CMPNY4', StringType(), True),\r\n",
+					"            StructField('RN_EKI1', StringType(), True),\r\n",
+					"            StructField('RN_EKI2', StringType(), True),\r\n",
+					"            StructField('RN_EKI3', StringType(), True),\r\n",
+					"            StructField('ENTRY_EXIT', StringType(), True),\r\n",
+					"            StructField('SEASON_USE', StringType(), True),\r\n",
+					"            StructField('SF_USE', StringType(), True),\r\n",
+					"            StructField('COMMON_RESERVE1', StringType(), True),\r\n",
+					"            StructField('SALE_3x', StringType(), True),\r\n",
+					"            StructField('SALE_2x', StringType(), True),\r\n",
+					"            StructField('SALE_1x', StringType(), True),\r\n",
+					"            StructField('SEASON_CALC', StringType(), True),\r\n",
+					"            StructField('PASS_SERVICE', StringType(), True),\r\n",
+					"            StructField('PRIOR_TRAIN_ENTRY_EXIT', StringType(), True),\r\n",
+					"            StructField('COMMON_RESERVE2', StringType(), True),\r\n",
+					"            StructField('COMMON_RESERVE3', StringType(), True),\r\n",
+					"            StructField('BUS_TRAIN_USE', StringType(), True),\r\n",
+					"            StructField('BUSTORW_RWTOBUS_SALE', StringType(), True),\r\n",
+					"            StructField('COMMON_RESERVE4', StringType(), True),\r\n",
+					"            StructField('TEMP_CALC_STATION_NUM', StringType(), True),\r\n",
+					"            StructField('JOSHA_STR_EKI', StringType(), True),\r\n",
+					"            StructField('JISEN_INS_PEAK_FARE', StringType(), True),\r\n",
+					"            StructField('USE_EKI1_AREA_SKBT_CD', StringType(), True),\r\n",
+					"            StructField('USE_EKI2_AREA_SKBT_CD', StringType(), True),\r\n",
+					"            StructField('OPRT_DATE_ID_BIT', StringType(), True),\r\n",
+					"            StructField('PROC_YMD', StringType(), True),\r\n",
+					"            StructField('NUM', StringType(), True),\r\n",
+					"            StructField('PROC_YMD_IDX', StringType(), True),\r\n",
+					"        ])\r\n",
+					"\r\n",
+					"        #BLOBファイル読み込み共通関数を実行し、結果を変数「target_df」に設定する。\r\n",
+					"        etl_dt_str = datetime.datetime.strftime(etl_dt,'%Y%m%d')\r\n",
+					"        \r\n",
+					"        #特別処理:複数ファイル連携\r\n",
+					"        file_path = blob_folder_path\r\n",
+					"        file_list = load_adls_blob_file_list(blob_link_service_name,blob_container_name,file_path)\r\n",
+					"        file_list.sort()\r\n",
+					"        target_df = spark.createDataFrame(spark.sparkContext.emptyRDD(),schema_columns)\r\n",
+					"\r\n",
+					"        # 取込対象ファイル件数カウント用\r\n",
+					"        file_cnt = 0\r\n",
+					"\r\n",
+					"        for file_name in file_list:\r\n",
+					"            if str(file_name).__contains__('mei_' + etl_dt_str + '_'):\r\n",
+					"\r\n",
+					"                # 取込対象ファイル数のカウント\r\n",
+					"                file_cnt += 1\r\n",
+					"\r\n",
+					"                file_name_path = file_path + file_name\r\n",
+					"                file_data = load_adls_file(blob_link_service_name, blob_container_name, file_name_path, schema_columns,'csv',True)\r\n",
+					"                target_df = target_df.unionByName(file_data)\r\n",
+					"                if file_data.count() == 0:\r\n",
+					"                    log('W0001','load_target_file','No Data In File')\r\n",
+					"\r\n",
+					"        # 取込対象ファイルが０件の場合は、取込対象ファイル無しとして異常終了させる\r\n",
+					"        if file_cnt == 0:\r\n",
+					"            raise FileNotFoundError(\"File Not Found\")\r\n",
+					"\r\n",
+					"        target_df = target_df.withColumn(\"T_CRM_SHORI_YMD\", F.lit(etl_dt_str)) \\\r\n",
+					"            .withColumn(\"T_CRM_UPDATE_DT\", F.current_timestamp()) \\\r\n",
+					"            .withColumn(\"T_CRM_UPDATE_ID\", F.lit('CRM_ETL_02_01_01'))\r\n",
+					"\r\n",
+					"        #ログ出力共通関数を実行し、処理終了ログを出力する。\r\n",
+					"        log('I0002', 'load_target_file')\r\n",
+					"        return target_df\r\n",
+					"    except Exception as e:\r\n",
+					"        log('E0001', 'load_target_file', type(e), e)\r\n",
+					"        raise e"
+				],
+				"execution_count": 63
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#対象データ整形処理\r\n",
+					"def cleansing_data(target_df,etl_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'cleansing_data')\r\n",
+					"        etl_dt_str = datetime.datetime.strftime(etl_dt,'%Y%m%d')\r\n",
+					"    \r\n",
+					"        target_df = target_df.withColumn('RCYCL_ID',F.col('RCYCL_ID').cast(ShortType())) \\\r\n",
+					"                            .withColumn('MEI_ID',F.col('MEI_ID').cast(IntegerType())) \\\r\n",
+					"                            .withColumn('OLD_CARD_RCYCL_ID',F.col('OLD_CARD_RCYCL_ID').cast(ShortType())) \\\r\n",
+					"                            .withColumn('SUM_USE_GK',F.col('SUM_USE_GK').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('SF_LOG_ID',F.col('SF_LOG_ID').cast(IntegerType())) \\\r\n",
+					"                            .withColumn('USE_GK_SF1',F.col('USE_GK_SF1').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('ZAN_GK_SF1',F.col('ZAN_GK_SF1').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DEPO_GK',F.col('DEPO_GK').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT1_CMPNY1',F.col('DISCNT1_CMPNY1').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT1_CMPNY2',F.col('DISCNT1_CMPNY2').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT2_CMPNY2',F.col('DISCNT2_CMPNY2').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT2_CMPNY3',F.col('DISCNT2_CMPNY3').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT3_CMPNY3',F.col('DISCNT3_CMPNY3').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('DISCNT3_CMPNY4',F.col('DISCNT3_CMPNY4').cast(DecimalType(6,0))) \\\r\n",
+					"                            .withColumn('JISEN_INS_PEAK_FARE',F.col('JISEN_INS_PEAK_FARE').cast(DecimalType(4,0))) \\\r\n",
+					"                            .withColumn('NUM',F.col('NUM').cast(LongType())) \\\r\n",
+					"\r\n",
+					"        target_df = target_df \\\r\n",
+					"            .withColumn(\"T_CRM_SHORI_YMD\", F.lit(etl_dt_str)) \\\r\n",
+					"            .withColumn(\"T_CRM_UPDATE_DT\", F.current_timestamp()) \\\r\n",
+					"            .withColumn(\"T_CRM_UPDATE_ID\", F.lit('CRM_ETL_02_01_01'))\r\n",
+					"\r\n",
+					"        #ログ出力共通関数を実行し、処理終了ログを出力する。\r\n",
+					"        log('I0002', 'cleansing_data')\r\n",
+					"        return target_df\r\n",
+					"    except Exception as e:\r\n",
+					"        log('E0001', 'cleansing_data', type(e), e)\r\n",
+					"        raise e"
+				],
+				"execution_count": 64
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# メイン処理\r\n",
+					"if __name__ == '__main__':\r\n",
+					"    try:\r\n",
+					"        #ログ出力共通関数を実行し、処理開始ログを出力する。\r\n",
+					"        log('I0001', 'main')\r\n",
+					"        \r\n",
+					"        #ETL業務日付を取得処理実行\r\n",
+					"        etl_dt = select_gyomu_dt()\r\n",
+					"\r\n",
+					"        #対象ファイル取得処理実行\r\n",
+					"        target_df = load_target_file(etl_dt)\r\n",
+					"\r\n",
+					"        #対象データ整形処理実行\r\n",
+					"        target_df = cleansing_data(target_df,etl_dt)\r\n",
+					"\r\n",
+					"        #新規：ID系一件明細\r\n",
+					"        save_table(pi_link_service_name,'ICC_ID_IKKEN_MEISAI',target_df)\r\n",
+					"\r\n",
+					"        # 元ファイル削除\r\n",
+					"        file_path = blob_folder_path\r\n",
+					"        file_list = load_adls_blob_file_list(blob_link_service_name,blob_container_name,file_path)\r\n",
+					"\r\n",
+					"        etl_dt_str = datetime.datetime.strftime(etl_dt,'%Y%m%d')\r\n",
+					"        for file_name in file_list:\r\n",
+					"\r\n",
+					"            if str(file_name).__contains__('mei_' + etl_dt_str + '_'):\r\n",
+					"                file_name_path = file_path + file_name\r\n",
+					"                delete_adls_blob(blob_link_service_name, blob_container_name,file_name_path)\r\n",
+					"\r\n",
+					"        #処理終了        \r\n",
+					"        log('I0002', 'メイン処理')\r\n",
+					"    except Exception as e:\r\n",
+					"        #エラー処理\r\n",
+					"        log('E0001', 'main', type(e), e)\r\n",
+					"        raise e"
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,175 @@
+{
+	"name": "Notebook 12",
+	"properties": {
+		"folder": {
+			"name": "AccessDatabase"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testmpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "4ea93d8c-3700-441f-bc56-d5dd2d77360e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testmpool",
+				"name": "testmpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testmpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"synapsesql(table_name: str=\"\") -> org.apache.spark.sql.DataFrame"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Add required imports\r\n",
+					"import com.microsoft.spark.sqlanalytics\r\n",
+					"from com.microsoft.spark.sqlanalytics.Constants import Constants\r\n",
+					"from pyspark.sql.functions import col\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# jdbc:sqlserver://test-synapse1-fan.sql.azuresynapse.net:1433;database=SynapseDedicatedSQLPool;user=sqladminuser@test-synapse1-fan;password={your_password_here};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\r\n",
+					"\r\n",
+					"# Name of the SQL Dedicated Pool or database where to run the query\r\n",
+					"# Database can be specified as a Spark Config or as a Constant - Constants.DATABASE\r\n",
+					"spark.conf.set(\"spark.sqlanalyticsconnector.dw.database\", \"SynapseDedicatedSQLPool\")\r\n",
+					"\r\n",
+					"# Read from a query\r\n",
+					"# Query can be provided either as an argument to synapsesql or as a Constant - Constants.QUERY\r\n",
+					"dfToReadFromQueryAsOption = (spark.read\r\n",
+					"                     # Name of the SQL Dedicated Pool or database where to run the query\r\n",
+					"                     # Database can be specified as a Spark Config - spark.sqlanalyticsconnector.dw.database or as a Constant - Constants.DATABASE\r\n",
+					"                     .option(Constants.DATABASE, \"SynapseDedicatedSQLPool\")\r\n",
+					"                     # If `Constants.SERVER` is not provided, the `<database_name>` from the three-part table name argument\r\n",
+					"                     # to `synapsesql` method is used to infer the Synapse Dedicated SQL End Point.\r\n",
+					"                     .option(Constants.SERVER, \"test-synapse1-fan.sql.azuresynapse.net\")\r\n",
+					"                     # Set database user name\r\n",
+					"                     .option(Constants.USER, \"sqladminuser\")\r\n",
+					"                     # Set user's password to the database\r\n",
+					"                     .option(Constants.PASSWORD, \"Pa$$w0rd1234\")\r\n",
+					"                     # Set name of the data source definition that is defined with database scoped credentials.\r\n",
+					"                     # https://docs.microsoft.com/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-ver15&tabs=dedicated#h-create-external-data-source-to-access-data-in-azure-storage-using-the-abfs-interface\r\n",
+					"                     # Data extracted from the SQL query will be staged to the storage path defined on the data source's location setting.\r\n",
+					"                     .option(Constants.DATA_SOURCE, \"MyAzureStorage\")\r\n",
+					"                     # Query from where data will be read.\r\n",
+					"                     .option(Constants.QUERY, \"select * from dbo.Persons \")\r\n",
+					"                     .synapsesql()\r\n",
+					"                    )\r\n",
+					"\r\n",
+					"# dfToReadFromQueryAsArgument = (spark.read\r\n",
+					"#                      # Name of the SQL Dedicated Pool or database where to run the query\r\n",
+					"#                      # Database can be specified as a Spark Config - spark.sqlanalyticsconnector.dw.database or as a Constant - Constants.DATABASE\r\n",
+					"#                      .option(Constants.DATABASE, \"<database_name>\")\r\n",
+					"#                      # If `Constants.SERVER` is not provided, the `<database_name>` from the three-part table name argument\r\n",
+					"#                      # to `synapsesql` method is used to infer the Synapse Dedicated SQL End Point.\r\n",
+					"#                      .option(Constants.SERVER, \"<sql-server-name>.sql.azuresynapse.net\")\r\n",
+					"#                      # Set database user name\r\n",
+					"#                      .option(Constants.USER, \"<user_name>\")\r\n",
+					"#                      # Set user's password to the database\r\n",
+					"#                      .option(Constants.PASSWORD, \"<user_password>\")\r\n",
+					"#                      # Set name of the data source definition that is defined with database scoped credentials.\r\n",
+					"#                      # https://docs.microsoft.com/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-ver15&tabs=dedicated#h-create-external-data-source-to-access-data-in-azure-storage-using-the-abfs-interface\r\n",
+					"#                      # Data extracted from the SQL query will be staged to the storage path defined on the data source's location setting.\r\n",
+					"#                      .option(Constants.DATA_SOURCE, \"<data_source_name>\")\r\n",
+					"#                      .synapsesql(\"select <column_name>, count(*) as counts from <schema_name>.<table_name> group by <column_name>\")\r\n",
+					"#                     )\r\n",
+					"\r\n",
+					"# Show contents of the dataframe\r\n",
+					"dfToReadFromQueryAsOption.show()\r\n",
+					"# dfToReadFromQueryAsArgument.show()"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}

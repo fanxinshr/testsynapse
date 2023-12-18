@@ -1,0 +1,180 @@
+{
+	"name": "matlib",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testconf",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "7b952884-c022-4f25-bfa4-3f0dd89418c1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testconf",
+				"name": "testconf",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testconf",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"hello\")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import matplotlib.pyplot as plt\r\n",
+					"import numpy as np\r\n",
+					" \r\n",
+					"# 二次曲線の作成\r\n",
+					"x = np.linspace(-3,3)\r\n",
+					"y = x**2\r\n",
+					"  \r\n",
+					"# 二次曲線のプロット作成\r\n",
+					"plt.plot(x, y, label=\"二次曲線\")\r\n",
+					" \r\n",
+					"# タイトル・軸ラベル表示\r\n",
+					"plt.title(\"グラフタイトル\")\r\n",
+					"plt.xlabel(\"x軸ラベル名\")\r\n",
+					"plt.ylabel(\"y軸ラベル名\")\r\n",
+					" \r\n",
+					"# グラフ内テキスト表示\r\n",
+					"plt.text(0, 4,\"テキスト例\")\r\n",
+					" \r\n",
+					"# 凡例表示\r\n",
+					"plt.legend()\r\n",
+					" \r\n",
+					"plt.show()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install pandas"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install japanize-matplotlib"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import matplotlib.pyplot as plt\r\n",
+					"import numpy as np\r\n",
+					"import japanize_matplotlib\r\n",
+					" \r\n",
+					"# 二次曲線の作成\r\n",
+					"x = np.linspace(-3,3)\r\n",
+					"y = x**2\r\n",
+					"  \r\n",
+					"# 二次曲線のプロット作成\r\n",
+					"plt.plot(x, y, label=\"二次曲線\")\r\n",
+					" \r\n",
+					"# タイトル・軸ラベル表示\r\n",
+					"plt.title(\"グラフタイトル\")\r\n",
+					"plt.xlabel(\"x軸ラベル名\")\r\n",
+					"plt.ylabel(\"y軸ラベル名\")\r\n",
+					" \r\n",
+					"# グラフ内テキスト表示\r\n",
+					"plt.text(0, 4,\"テキスト例\")\r\n",
+					" \r\n",
+					"# 凡例表示\r\n",
+					"plt.legend()\r\n",
+					" \r\n",
+					"plt.show()"
+				],
+				"execution_count": 2
+			}
+		]
+	}
+}

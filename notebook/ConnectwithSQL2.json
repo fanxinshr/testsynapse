@@ -1,0 +1,122 @@
+{
+	"name": "ConnectwithSQL2",
+	"properties": {
+		"folder": {
+			"name": "AccessDatabase"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testsparkpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "02c7e5a1-5801-4a9d-b15a-cabccad78837"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1",
+				"state": {
+					"0228699a-2199-43f9-afa3-47b4f8774b45": {
+						"type": "Synapse.DataFrame",
+						"sync_state": {
+							"table": {
+								"rows": [
+									{
+										"0": "1"
+									}
+								],
+								"schema": [
+									{
+										"key": "0",
+										"name": "col1",
+										"type": "int"
+									}
+								],
+								"truncated": false
+							},
+							"isSummary": false,
+							"language": "scala"
+						},
+						"persist_state": {
+							"view": {
+								"type": "details",
+								"chartOptions": {
+									"chartType": "bar",
+									"aggregationType": "sum",
+									"categoryFieldKeys": [],
+									"seriesFieldKeys": [
+										"0"
+									],
+									"isStacked": false
+								}
+							}
+						}
+					}
+				}
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testsparkpool",
+				"name": "testsparkpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testsparkpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"collapsed": false
+				},
+				"source": [
+					"jdbcHostname = \"mysqlservercup.database.windows.net\"  \r\n",
+					"jdbcDatabase = \"mySampleDatabase\"  \r\n",
+					"jdbcPort = \"1433\"  \r\n",
+					"username = \"azureuser@mysqlservercup\"  \r\n",
+					"password = \"Pa$$w0rd\"  \r\n",
+					"jdbcUrl = \"jdbc:sqlserver://{0}:{1};database={2}\".format(jdbcHostname, jdbcPort, jdbcDatabase)  \r\n",
+					"connectionProperties = {  \r\n",
+					"  \"user\" : username,  \r\n",
+					"  \"password\" : password,  \r\n",
+					"  \"driver\" : \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"  \r\n",
+					"}  \r\n",
+					"pushdown_query = \"(select * from sampletbl where col1 > 0) CustomerID\"  \r\n",
+					"df = spark.read.jdbc(url=jdbcUrl, table=pushdown_query, properties=connectionProperties)  \r\n",
+					"display(df) "
+				],
+				"execution_count": 1
+			}
+		]
+	}
+}

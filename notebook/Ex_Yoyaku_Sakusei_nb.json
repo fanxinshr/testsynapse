@@ -1,0 +1,709 @@
+{
+	"name": "Ex_Yoyaku_Sakusei_nb",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "6bbbaf76-bcad-4922-8a5d-c651a30bb8d9"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import datetime\r\n",
+					"import pyspark.sql.functions as F\r\n",
+					"from pyspark.sql.types import *"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%run modules/common"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 30進法番号取得処理\r\n",
+					"@udf(returnType=StringType())\r\n",
+					"def base36_encode(number, gymou_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'base36_encode')\r\n",
+					"\r\n",
+					"        # 十進法から30進法へ処理する\r\n",
+					"        num_str = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'\r\n",
+					"        if number == 0:\r\n",
+					"            return '0'\r\n",
+					"        base36 = []\r\n",
+					"        while number != 0:\r\n",
+					"            number, i = divmod(number, 36)\r\n",
+					"            base36.append(num_str[i])\r\n",
+					"        ret = ''.join(reversed(base36)).zfill(8)\r\n",
+					"        ret = gymou_dt + ret\r\n",
+					"        \r\n",
+					"        log('I0002', 'base36_encode')\r\n",
+					"        return ret\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'base36_encode', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 業務日付情報取得処理\r\n",
+					"def get_etl_gyomu_dt():\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'get_etl_gyomu_dt')\r\n",
+					"\r\n",
+					"        gyomu_dt = select_gyomu_dt()\r\n",
+					"        \r\n",
+					"        log('I0002', 'get_etl_gyomu_dt')\r\n",
+					"        return gyomu_dt\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'get_etl_gyomu_dt', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 会員マスタ読み込み処理\r\n",
+					"def load_kain_mst():\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'load_kain_mst')\r\n",
+					"\r\n",
+					"        # load_table(link_service:str,table_name:str):\r\n",
+					"        kaiin_mst_jyoho =load_table('personal_information_sql', 'KAIIN_MST')\r\n",
+					"        # カラム選択\r\n",
+					"        kaiin_mst_jyoho = kaiin_mst_jyoho.select(col(\"T_CLIENT_NUMBER\"),col(\"KAIIN_ID\"))\r\n",
+					"\r\n",
+					"        log('I0002', 'load_kain_mst')\r\n",
+					"        return kaiin_mst_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'load_kain_mst', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# EX予約実績読み込み処理\r\n",
+					"def load_exp_yoyaku_jisseki(gyomu_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'load_exp_yoyaku_jisseki')\r\n",
+					"\r\n",
+					"        # load_table(link_service:str,table_name:str):\r\n",
+					"        exp_yoyaku_jisseki_jyoho = load_table('analysis_data_sql', 'EXP_YOYAKU_JISSEKI')\r\n",
+					"        # 抽出条件:統合CRM日次処理日(T_CRM_SHORI_YMD)=取得した業務日付(GYOMU_DT)\r\n",
+					"        exp_yoyaku_jisseki_jyoho = exp_yoyaku_jisseki_jyoho.where(col('T_CRM_SHORI_YMD') == gyomu_dt)\r\n",
+					"        # カラム選択\r\n",
+					"        exp_yoyaku_jisseki_jyoho = exp_yoyaku_jisseki_jyoho.select(F.when(col('SOSA_NAIYO')!='予約',None).otherwise(col('SOSA_YMD')).alias('YOYAKU_YMD_JST'),\r\n",
+					"                                                                col('JOSHA_YMD').alias('JOSHA_YMD_JST'),\r\n",
+					"                                                                col('SOSA_NAIYO'),col('JOSHA_EKI_NAME').alias('HATSU_EKI_NAME'),\r\n",
+					"                                                                col('JOSHA_EKI_CD').alias('HATSU_EKI_CD_3'),col('KOSHA_EKI_NAME').alias('CHAKU_EKI_NAME'),\r\n",
+					"                                                                col('KOSHA_EKI_CD').alias('CHAKU_EKI_CD_3'),col('KAIIN_ID'),col('T_CRM_SHORI_YMD'))\r\n",
+					"        log('I0002', 'load_exp_yoyaku_jisseki')\r\n",
+					"        return exp_yoyaku_jisseki_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'load_exp_yoyaku_jisseki', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 会員マスタとEX予約実績情報の結合処理\r\n",
+					"def exp_yoyaku_jisseki_left_join_kaiin_mst(kaiin_mst_jyoho,exp_yoyaku_jisseki_jyoho):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'exp_yoyaku_jisseki_left_join_kaiin_mst')\r\n",
+					"\r\n",
+					"        # 引数「kaiin_mst_jyoho」に引数「exp_yoyaku_jisseki_jyoho」を左外部結合し、変数「kaiin_and_yoyaku_jyoho」に設定する。\r\n",
+					"        join_condition =[ kaiin_mst_jyoho.KAIIN_ID == exp_yoyaku_jisseki_jyoho.KAIIN_ID]\r\n",
+					"        kaiin_and_yoyaku_jyoho = kaiin_mst_jyoho.join(exp_yoyaku_jisseki_jyoho, join_condition, 'left')\r\n",
+					"        # TODO \r\n",
+					"        kaiin_and_yoyaku_jyoho = kaiin_and_yoyaku_jyoho.drop(exp_yoyaku_jisseki_jyoho.KAIIN_ID)\r\n",
+					"\r\n",
+					"        log('I0002', 'exp_yoyaku_jisseki_left_join_kaiin_mst')\r\n",
+					"        return kaiin_and_yoyaku_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'exp_yoyaku_jisseki_left_join_kaiin_mst', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 採番処理\r\n",
+					"def set_saiban(kaiin_and_yoyaku_jyoho,gymou_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'set_saiban')\r\n",
+					"\r\n",
+					"        # 採番方法を実行し、カラム「連番」を「kaiin_and_yoyaku_jyoho」に挿入し、結果を「kaiin_and_yoyaku_jyoho」に設定する\r\n",
+					"        w = Window().orderBy(lit('A'))\r\n",
+					"        kaiin_and_yoyaku_jyoho = kaiin_and_yoyaku_jyoho.withColumn(\"row_num\", row_number().over(w))\r\n",
+					"        kaiin_and_yoyaku_jyoho = kaiin_and_yoyaku_jyoho.withColumn(\"RENBAN\", base36_encode(col('row_num'), lit(gyomu_dt)))\r\n",
+					"        \r\n",
+					"        log('I0002', 'set_saiban')\r\n",
+					"        return kaiin_and_yoyaku_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'set_saiban', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 4056_（マスタ）e5489駅マスタ読み込み処理\r\n",
+					"def load_tdc_e5489_eki():\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'load_tdc_e5489_eki')\r\n",
+					"\r\n",
+					"        # load_table(link_service:str,table_name:str):\r\n",
+					"        tdc_e5489_eki_jyoho = load_table('analysis_data_sql', 'TDC_E5489_EKI')\r\n",
+					"        \r\n",
+					"        log('I0002', 'load_tdc_e5489_eki')\r\n",
+					"        return tdc_e5489_eki_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'load_tdc_e5489_eki', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# EX予約実績情報と4056_（マスタ）e5489駅マスタの結合処理\r\n",
+					"def exp_yoyaku_jisseki_join_tdc_e5489_eki(kaiin_and_yoyaku_jyoho,tdc_e5489_eki_jyoho):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'exp_yoyaku_jisseki_join_tdc_e5489_eki')\r\n",
+					"\r\n",
+					"        # 左外部結合し、変数「jisseki_join_e5489_jyoho」に設定する。乗車駅コード（12桁）の取得\r\n",
+					"        join_condition = [kaiin_and_yoyaku_jyoho.HATSU_EKI_CD_3 == tdc_e5489_eki_jyoho.SHINKANSEN_EKI_CD]\r\n",
+					"        jisseki_join_e5489_jyoho = kaiin_and_yoyaku_jyoho.join(tdc_e5489_eki_jyoho, join_condition, 'left')\r\n",
+					"        # カラム選択\r\n",
+					"        jisseki_join_e5489_jyoho = jisseki_join_e5489_jyoho.select(col('T_CLIENT_NUMBER'),col('RENBAN'),col('YOYAKU_YMD_JST'),col('JOSHA_YMD_JST'),col('SOSA_NAIYO'),col('HATSU_EKI_NAME'),\r\n",
+					"                                    col('HATSU_EKI_CD_3'),col('CHAKU_EKI_NAME'),col('CHAKU_EKI_CD_3'),col('EKI_CD').alias('HATSU_EKI_CD_12'))    \r\n",
+					"        \r\n",
+					"        # 左外部結合し、変数「jisseki_join_e5489_jyoho」に設定する。到着駅コード（12桁）の取得\r\n",
+					"        join_condition = [jisseki_join_e5489_jyoho.CHAKU_EKI_CD_3==tdc_e5489_eki_jyoho.SHINKANSEN_EKI_CD]\r\n",
+					"        jisseki_join_e5489_jyoho = jisseki_join_e5489_jyoho.join(tdc_e5489_eki_jyoho, join_condition, 'left')\r\n",
+					"\r\n",
+					"        # カラム選択\r\n",
+					"        jisseki_join_e5489_jyoho = jisseki_join_e5489_jyoho.select(col('T_CLIENT_NUMBER'),col('RENBAN'),col('YOYAKU_YMD_JST'),col('JOSHA_YMD_JST'),col('SOSA_NAIYO'),col('HATSU_EKI_NAME'),\r\n",
+					"                                    col('HATSU_EKI_CD_3'),col('CHAKU_EKI_NAME'),col('CHAKU_EKI_CD_3'),col('HATSU_EKI_CD_12'),col('EKI_CD').alias('CHAKU_EKI_CD_12'))    \r\n",
+					"\r\n",
+					"        log('I0002', 'exp_yoyaku_jisseki_join_tdc_e5489_eki')\r\n",
+					"        return jisseki_join_e5489_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'exp_yoyaku_jisseki_join_tdc_e5489_eki', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# データ加工処理\r\n",
+					"def edit_data(jisseki_join_e5489_jyoho,gyomu_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'edit_data')\r\n",
+					"\r\n",
+					"        # カラムを挿入する\r\n",
+					"        edit_data = jisseki_join_e5489_jyoho.withColumn('T_CRM_SHORI_YMD',lit(gyomu_dt))\r\n",
+					"        edit_data = edit_data.withColumn('T_CRM_UPDATE_DT', F.current_timestamp())\r\n",
+					"        edit_data = edit_data.withColumn('T_CRM_UPDATE_ID', lit('CRM_ETL_18_01_01'))\r\n",
+					"        edit_data = edit_data.withColumn('MA_DATA_KOUSHIN_DT_JST', F.current_timestamp())\r\n",
+					"\r\n",
+					"        log('I0002', 'edit_data')\r\n",
+					"        return edit_data\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'edit_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# EX予約読み込み処理\r\n",
+					"def load_ex_yoyaku():\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'load_ex_yoyaku')\r\n",
+					"\r\n",
+					"        # load_table(link_service:str,table_name:str):\r\n",
+					"        exp_yoyaku_jyoho  =load_table('analysis_data_sql', 'EX_YOYAKU')\r\n",
+					"\r\n",
+					"        log('I0002', 'load_ex_yoyaku')\r\n",
+					"        return exp_yoyaku_jyoho\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'load_ex_yoyaku', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 登録データ加工処理\r\n",
+					"def edit_insert_data(edit_data,exp_yoyaku_jyoho):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'edit_insert_data')\r\n",
+					"\r\n",
+					"        # edit_dataから登録データを取得する\r\n",
+					"        join_condition = [(edit_data.T_CLIENT_NUMBER == exp_yoyaku_jyoho.T_CLIENT_NUMBER) & (edit_data.RENBAN == exp_yoyaku_jyoho.RENBAN)]\r\n",
+					"        insert_data = edit_data.join(exp_yoyaku_jyoho, join_condition, 'left')\r\n",
+					"        insert_data = insert_data.where(exp_yoyaku_jyoho.T_CLIENT_NUMBER.isNull())\r\n",
+					"        insert_data = insert_data.select(edit_data.T_CLIENT_NUMBER,\r\n",
+					"                                        edit_data.RENBAN,\r\n",
+					"                                        edit_data.YOYAKU_YMD_JST,\r\n",
+					"                                        edit_data.SOSA_NAIYO,\r\n",
+					"                                        edit_data.JOSHA_YMD_JST,\r\n",
+					"                                        edit_data.HATSU_EKI_NAME,\r\n",
+					"                                        edit_data.HATSU_EKI_CD_3,\r\n",
+					"                                        edit_data.HATSU_EKI_CD_12,\r\n",
+					"                                        edit_data.CHAKU_EKI_NAME,\r\n",
+					"                                        edit_data.CHAKU_EKI_CD_3,\r\n",
+					"                                        edit_data.CHAKU_EKI_CD_12,\r\n",
+					"                                        edit_data.T_CRM_SHORI_YMD,\r\n",
+					"                                        edit_data.T_CRM_UPDATE_DT,\r\n",
+					"                                        edit_data.T_CRM_UPDATE_ID,\r\n",
+					"                                        edit_data.MA_DATA_KOUSHIN_DT_JST)\r\n",
+					"\r\n",
+					"        log('I0002', 'edit_insert_data')\r\n",
+					"        return insert_data\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'edit_insert_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 更新データ加工処理\r\n",
+					"def edit_update_data(edit_data,exp_yoyaku_jyoho):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'edit_update_data')\r\n",
+					"\r\n",
+					"        # edit_dataから更新データを取得する\r\n",
+					"        join_condition = [(edit_data.T_CLIENT_NUMBER == exp_yoyaku_jyoho.T_CLIENT_NUMBER) & (edit_data.RENBAN == exp_yoyaku_jyoho.RENBAN)]\r\n",
+					"        update_data = edit_data.join(exp_yoyaku_jyoho, join_condition, 'inner')\r\n",
+					"        update_data = update_data.select(edit_data.T_CLIENT_NUMBER,\r\n",
+					"                                        edit_data.RENBAN,\r\n",
+					"                                        edit_data.YOYAKU_YMD_JST,\r\n",
+					"                                        edit_data.SOSA_NAIYO,\r\n",
+					"                                        edit_data.JOSHA_YMD_JST,\r\n",
+					"                                        edit_data.HATSU_EKI_NAME,\r\n",
+					"                                        edit_data.HATSU_EKI_CD_3,\r\n",
+					"                                        edit_data.HATSU_EKI_CD_12,\r\n",
+					"                                        edit_data.CHAKU_EKI_NAME,\r\n",
+					"                                        edit_data.CHAKU_EKI_CD_3,\r\n",
+					"                                        edit_data.CHAKU_EKI_CD_12,\r\n",
+					"                                        edit_data.T_CRM_SHORI_YMD,\r\n",
+					"                                        edit_data.T_CRM_UPDATE_DT,\r\n",
+					"                                        edit_data.T_CRM_UPDATE_ID,\r\n",
+					"                                        edit_data.MA_DATA_KOUSHIN_DT_JST)\r\n",
+					"        # 更新SQL作成\r\n",
+					"        update_data = update_data.withColumn(\"update_sql\", F.format_string(\"update EX_YOYAKU set YOYAKU_YMD_JST=%s,\"\r\n",
+					"                                                                                                 \"SOSA_NAIYO=%s,\"\r\n",
+					"                                                                                                 \"JOSHA_YMD_JST=%s,\"\r\n",
+					"                                                                                                 \"HATSU_EKI_NAME=%s,\"\r\n",
+					"                                                                                                 \"HATSU_EKI_CD_3=%s,\"\r\n",
+					"                                                                                                 \"HATSU_EKI_CD_12=%s,\"\r\n",
+					"                                                                                                 \"CHAKU_EKI_NAME=%s,\"\r\n",
+					"                                                                                                 \"CHAKU_EKI_CD_3=%s,\"\r\n",
+					"                                                                                                 \"CHAKU_EKI_CD_12=%s,\"\r\n",
+					"                                                                                                 \"T_CRM_SHORI_YMD=%s,\"\r\n",
+					"                                                                                                 \"T_CRM_UPDATE_DT=%s,\"\r\n",
+					"                                                                                                 \"T_CRM_UPDATE_ID=%s,\"\r\n",
+					"                                                                                                 \"MA_DATA_KOUSHIN_DT_JST=%s\"\r\n",
+					"                                                                                                 \" where T_CLIENT_NUMBER = %s and RENBAN=%s\",col('YOYAKU_YMD_JST'),\r\n",
+					"                                                                                                 col('SOSA_NAIYO'),\r\n",
+					"                                                                                                 col('JOSHA_YMD_JST'),\r\n",
+					"                                                                                                 col('HATSU_EKI_NAME'),\r\n",
+					"                                                                                                 col('HATSU_EKI_CD_3'),\r\n",
+					"                                                                                                 col('HATSU_EKI_CD_12'),\r\n",
+					"                                                                                                 col('CHAKU_EKI_NAME'),\r\n",
+					"                                                                                                 col('CHAKU_EKI_CD_3'),\r\n",
+					"                                                                                                 col('CHAKU_EKI_CD_12'),\r\n",
+					"                                                                                                 col('T_CRM_SHORI_YMD'),\r\n",
+					"                                                                                                 col('T_CRM_UPDATE_DT'),\r\n",
+					"                                                                                                 col('T_CRM_UPDATE_ID'),\r\n",
+					"                                                                                                 col('MA_DATA_KOUSHIN_DT_JST'),col('T_CLIENT_NUMBER'),col('RENBAN')\r\n",
+					"                                                                                                 ))    \r\n",
+					"    \r\n",
+					"        log('I0002', 'edit_update_data')\r\n",
+					"        return update_data\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'edit_update_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 登録データ保存処理\r\n",
+					"def save_insert_data(insert_data):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'save_insert_data')\r\n",
+					"\r\n",
+					"        # save_table(link_service:str,table_name:str,data: DataFrame):\r\n",
+					"        save_table('analysis_data_sql', 'EX_YOYAKU',insert_data)\r\n",
+					"\r\n",
+					"        log('I0002', 'save_insert_data')\r\n",
+					"        \r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'save_insert_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 更新データ保存処理\r\n",
+					"def save_update_data(update_data):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'save_update_data')\r\n",
+					"\r\n",
+					"        # executeQuery関数（クエリ実行共通関数）\r\n",
+					"        for row in update_data.collect():\r\n",
+					"            update_sql = row.update_sql\r\n",
+					"            executeQuery('analysis_data_sql', update_sql)\r\n",
+					"        \r\n",
+					"        log('I0002', 'save_update_data')\r\n",
+					"        \r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'save_update_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# EX予約情報抽出処理\r\n",
+					"def select_ex_yoyaku(gyomu_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'select_ex_yoyaku')\r\n",
+					"\r\n",
+					"        # load_table(link_service:str,table_name:str):\r\n",
+					"        output_yoyaku_jyoho  =load_table('analysis_data_sql', 'EX_YOYAKU')\r\n",
+					"\r\n",
+					"        # 条件に合わせて、データを抽出\r\n",
+					"        output_yoyaku_jyoho = output_yoyaku_jyoho.where((col('T_CRM_SHORI_YMD') == gyomu_dt) & (col('SOSA_NAIYO') == '購入'))\r\n",
+					"\r\n",
+					"        # カラム選択\r\n",
+					"        output_data = output_yoyaku_jyoho.select(col('T_CLIENT_NUMBER'),col('RENBAN'),col('YOYAKU_YMD_JST'),col('JOSHA_YMD_JST'),col('HATSU_EKI_NAME'),\r\n",
+					"        col('HATSU_EKI_CD_3'),col('HATSU_EKI_CD_12'),col('CHAKU_EKI_NAME'),col('CHAKU_EKI_CD_3'),col('CHAKU_EKI_CD_12'),col('MA_DATA_KOUSHIN_DT_JST'))\r\n",
+					"        \r\n",
+					"        log('I0002', 'select_ex_yoyaku')\r\n",
+					"        return output_data\r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'select_ex_yoyaku', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 出力データ保存処理\r\n",
+					"def save_output_data(output_data,gymou_dt):\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'save_output_data')\r\n",
+					"\r\n",
+					"        file_type = 'tsv'\r\n",
+					"        mode = 'w'\r\n",
+					"        file_path =f'Export/System/EX_YOYAKU_{gymou_dt}'\r\n",
+					"\r\n",
+					"        # save_sftp(link_service:str,file_path:str,data:DataFrame,file_type:str,mode:str):\r\n",
+					"        save_sftp('analysis_data_sql',file_path,output_data,file_type,mode)\r\n",
+					"        \r\n",
+					"        log('I0002', 'save_output_data')\r\n",
+					"        \r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'save_output_data', type(e), e)\r\n",
+					"        raise e"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# メイン処理\r\n",
+					"if __name__ == '__main__':\r\n",
+					"    try:\r\n",
+					"        log('I0001', 'main')\r\n",
+					"\r\n",
+					"        # 業務日付情報取得処理実行\r\n",
+					"        gyomu_dt = get_etl_gyomu_dt()\r\n",
+					"\r\n",
+					"        # 会員マスタ読み込み処理実行\r\n",
+					"        kaiin_mst_jyoho = load_kain_mst()\r\n",
+					"\r\n",
+					"        # EX予約実績読み込み処理実行\r\n",
+					"        exp_yoyaku_jisseki_jyoho = load_exp_yoyaku_jisseki(gymou_dt)\r\n",
+					"\r\n",
+					"        # 会員マスタとEX予約実績情報の結合処理実行\r\n",
+					"        kaiin_and_yoyaku_jyoho = exp_yoyaku_jisseki_left_join_kaiin_mst(kaiin_mst_jyoho,exp_yoyaku_jisseki_jyoho)\r\n",
+					"\r\n",
+					"        # 採番処理実行\r\n",
+					"        kaiin_and_yoyaku_jyoho =set_saiban(kaiin_and_yoyaku_jyoho,gymou_dt)\r\n",
+					"\r\n",
+					"        # 4056_（マスタ）e5489駅マスタ読み込み処理実行\r\n",
+					"        tdc_e5489_eki_jyoho =load_tdc_e5489_eki()\r\n",
+					"\r\n",
+					"        # EX予約実績情報と4056_（マスタ）e5489駅マスタの結合処理\r\n",
+					"        jisseki_join_e5489_jyoho = exp_yoyaku_jisseki_join_tdc_e5489_eki(kaiin_and_yoyaku_jyoho,tdc_e5489_eki_jyoho)\r\n",
+					"\r\n",
+					"        # データ加工処理\r\n",
+					"        edit_data = exp_yoyaku_jisseki_join_tdc_e5489_eki(jisseki_join_e5489_jyoho,gyomu_dt)\r\n",
+					"\r\n",
+					"        # EX予約読み込み処理実行\r\n",
+					"        exp_yoyaku_jyoho = load_ex_yoyaku()\r\n",
+					"\r\n",
+					"        # 登録データ加工処理実行\r\n",
+					"        insert_data =edit_insert_data(edit_data,exp_yoyaku_jyoho)\r\n",
+					"\r\n",
+					"        # 更新データ加工処理実行\r\n",
+					"        update_data =edit_update_data(edit_data,exp_yoyaku_jyoho)\r\n",
+					"\r\n",
+					"        # 登録データ保存処理実行\r\n",
+					"        save_insert_data(insert_data)\r\n",
+					"\r\n",
+					"        # 更新データ保存処理実行\r\n",
+					"        save_update_data(update_data)\r\n",
+					"\r\n",
+					"        # EX予約情報抽出処理\r\n",
+					"        output_data = select_ex_yoyaku()\r\n",
+					"\r\n",
+					"        # 出力データ保存処理\r\n",
+					"        save_output_data(output_data,gymou_dt)\r\n",
+					"\r\n",
+					"        log('I0002', 'main')   \r\n",
+					"    except Exception as e:\r\n",
+					"        log(E0001, 'main', type(e), e)\r\n",
+					"        raise e\r\n",
+					""
+				]
+			}
+		]
+	}
+}

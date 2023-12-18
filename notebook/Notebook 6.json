@@ -1,0 +1,77 @@
+{
+	"name": "Notebook 6",
+	"properties": {
+		"folder": {
+			"name": "AccessADLSGen2"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testDotNt",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "b9abf222-362c-4535-9b3f-2a63b46ebf07"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testDotNt",
+				"name": "testDotNt",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testDotNt",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from azure.identity import DefaultAzureCredential\r\n",
+					"from azure.storage.filedatalake import DataLakeServiceClient\r\n",
+					"\r\n",
+					"credential = DefaultAzureCredential()\r\n",
+					"service_client = DataLakeServiceClient(account_url=\"{}://{}.dfs.core.windows.net\".format(\"https\", \"fanxintestadls\"), credential=credential)\r\n",
+					"file_system_client = service_client.get_file_system_client(file_system=\"test\")\r\n",
+					"\r\n",
+					"paths = file_system_client.get_paths()\r\n",
+					"for path in paths:\r\n",
+					"    print(path.name)"
+				],
+				"execution_count": 2
+			}
+		]
+	}
+}

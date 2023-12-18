@@ -1,0 +1,150 @@
+{
+	"name": "Notebook 7",
+	"properties": {
+		"folder": {
+			"name": "AccessDatabase"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testmpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "9a730f33-aa74-4e0c-a883-9179e941bcae"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testmpool",
+				"name": "testmpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testmpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pyodbc\r\n",
+					"pyodbc.drivers()\r\n",
+					""
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pyodbc\r\n",
+					"server = 'test-synapse1-fan-ondemand.sql.azuresynapse.net'\r\n",
+					"database = 'test'\r\n",
+					"username = 'username'\r\n",
+					"password = 'password'\r\n",
+					"driver= 'ODBC Driver 17 for SQL Server'\r\n",
+					"with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password) as conn:\r\n",
+					"    with conn.cursor() as cursor:\r\n",
+					"        cursor.execute(\"SELECT TOP 3 name, collation_name FROM sys.databases\")\r\n",
+					"        row = cursor.fetchone()\r\n",
+					"        while row:\r\n",
+					"            print (str(row[0]) + \" \" + str(row[1]))\r\n",
+					"            row = cursor.fetchone()\r\n",
+					""
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"cnxn = pyodbc.connect(\"Driver=ODBC Driver 17 for SQL Server;Server=tcp:test-synapse1-fan-ondemand.sql.azuresynapse.net,1433;Database=test;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;Authentication=ActiveDirectoryIntegrated\")"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from azure.identity import DefaultAzureCredential\r\n",
+					"from azure.synapse.artifacts import ArtifactClient\r\n",
+					"from azure.synapse.sql import SqlManagementClient\r\n",
+					"from azure.core.exceptions import HttpResponseError\r\n",
+					"\r\n",
+					"credential = DefaultAzureCredential()\r\n",
+					"artifact_client = ArtifactClient(endpoint='https://test-synapse1-fan.dev.azuresynapse.net', credential=credential)\r\n",
+					"sql_client = SqlManagementClient(endpoint='https://test-synapse1-fan.dev.azuresynapse.net', credential=credential)\r\n",
+					"try:\r\n",
+					"    sql_pool = sql_client.sql_pools.get('SynapseDedicatedSQLPool', 'test-synapse1')\r\n",
+					"    print(f\"Connected to SQL Pool '{sql_pool.name}'\")\r\n",
+					"except HttpResponseError as error:\r\n",
+					"    print(error)"
+				],
+				"execution_count": 18
+			}
+		]
+	}
+}

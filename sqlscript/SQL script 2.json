@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 2",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [PersonID]\n,[LastName]\n,[FirstName]\n,[Address]\n,[City]\n FROM [dbo].[Persons]\n\n\n CREATE USER [fanxin@microsoft.com] FROM EXTERNAL PROVIDER;\n\n\n CREATE SCHEMA [dbo];\n\n CREATE USER [fanxin@microsoft.com] FROM EXTERNAL PROVIDER;\n\n\n--synapse sql dedicated pool\n--read \nEXEC sp_addrolemember 'db_exporter', [fanxin@microsoft.com];\n \n\n--write\n--Make sure your user has the permissions to CREATE tables in the [dbo] schema\nGRANT CREATE TABLE TO [fanxin@microsoft.com];\nGRANT ALTER ON SCHEMA::dbo TO [fanxin@microsoft.com];\n--Make sure your user has ADMINISTER DATABASE BULK OPERATIONS permissions\nGRANT ADMINISTER DATABASE BULK OPERATIONS TO [fanxin@microsoft.com];\n--Make sure your user has INSERT permissions on the target table\nGRANT INSERT ON Persons TO [fanxin@microsoft.com]\n \n----to dbo\nGRANT CREATE TABLE TO [fanxin@microsoft.com];\nGRANT ALTER ON SCHEMA::[dbo] TO [fanxin@microsoft.com];\n--Make sure your user has ADMINISTER DATABASE BULK OPERATIONS permissions\nGRANT ADMINISTER DATABASE BULK OPERATIONS TO [fanxin@microsoft.com];\n \n--Make sure your user has INSERT permissions on the target table\nGRANT INSERT ON Persons TO [fanxin@microsoft.com]\n\n\n\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SynapseDedicatedSQLPool",
+				"poolName": "SynapseDedicatedSQLPool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

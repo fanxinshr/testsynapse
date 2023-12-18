@@ -1,0 +1,423 @@
+{
+	"name": "Notebook 11",
+	"properties": {
+		"folder": {
+			"name": "AccessADLSGen2"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "testsparkpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "f0152e79-8e17-4b7a-aa7b-458c5f4dec06"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/cc7a7151-8b95-49b7-aaf9-6802e1f1f6d2/resourceGroups/test-synapse1/providers/Microsoft.Synapse/workspaces/test-synapse1-fan/bigDataPools/testsparkpool",
+				"name": "testsparkpool",
+				"type": "Spark",
+				"endpoint": "https://test-synapse1-fan.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/testsparkpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"data_path = spark.read.load('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/sample.csv', format='csv', header=False)\r\n",
+					"data_path.show(10)\r\n",
+					"\r\n",
+					"print('Converting to Pandas.')\r\n",
+					"\r\n",
+					"pdf = data_path.toPandas()\r\n",
+					"print(pdf)"
+				],
+				"execution_count": 49
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas\r\n",
+					"\r\n",
+					"\r\n",
+					"df = pandas.read_csv('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/sample.csv')\r\n",
+					"print(df)\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# # abfss://test4synapse@testsynapseprivatefan.dfs.core.windows.net/sample.csv\r\n",
+					"# import pandas\r\n",
+					"\r\n",
+					"# df = pandas.read_csv('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx',\r\n",
+					"# storage_options={'account_key':'VGzDHW00+SB7Bn28DvbS04YQRvZ79kX1tqqTvSTOL9uX/Q+zBFWuDH6cNowHxDweDSBU7NImBuSx+AStJ8suJA=='})"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = pandas.read_excel('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx')\r\n",
+					"print(df)"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from openpyxl import load_workbook\r\n",
+					"# , read_only=False, keep_vba=True\r\n",
+					"\r\n",
+					"wb = load_workbook(filename='abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/sample.csv')\r\n",
+					"print(wb)"
+				],
+				"execution_count": 52
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from openpyxl import load_workbook\r\n",
+					"# , read_only=False, keep_vba=True\r\n",
+					"# https://testfansynapseadlsgen2.dfs.core.windows.net/excel/Book1.xlsx\r\n",
+					"\r\n",
+					"wb = load_workbook(filename='https://testfansynapseadlsgen2.dfs.core.windows.net/excel/Book1.xlsx')\r\n",
+					"print(wb)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# testfansynapseadlsgen2.blob.core.windows.net/excel\r\n",
+					"mssparkutils.fs.mount( \r\n",
+					"    \"abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/abc\", \r\n",
+					"    \"/test2\"\r\n",
+					") "
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.ls(\"/test2\")"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from openpyxl import load_workbook\r\n",
+					"# , read_only=False, keep_vba=True\r\n",
+					"\r\n",
+					"wb = load_workbook(filename='/test/Book1.xlsx')\r\n",
+					"print(wb)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx\r\n",
+					"mssparkutils.fs.ls(\"abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx\")\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from openpyxl import load_workbook\r\n",
+					"# , read_only=False, keep_vba=True\r\n",
+					"\r\n",
+					"wb = load_workbook(filename=\"https://testfansynapseadlsgen2.blob.core.windows.net/excel/Book1.xlsx?sp=r&st=2023-05-26T11:48:06Z&se=2023-05-31T19:48:06Z&sv=2022-11-02&sr=b&sig=IaBLqs4bmI70s%2FvCQvdBzkoX1Ra5FeYqPw%2BU%2BSylW9o%3D\", read_only=False, keep_vba=True)\r\n",
+					"print(wb)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = pandas.read_excel('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx')\r\n",
+					"print(df)"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.mount(\r\n",
+					"   \"abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/\",\r\n",
+					"  \"/mnt/test\")"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.ls(\"//mnt/test/\")\r\n",
+					"\r\n",
+					"from openpyxl import load_workbook\r\n",
+					"# , read_only=False, keep_vba=True\r\n",
+					"\r\n",
+					"wb = load_workbook(filename=\"//mnt/test/Book1.xlsx\", read_only=False, keep_vba=True)\r\n",
+					"print(wb)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.mount(\r\n",
+					"   \"abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/\",\r\n",
+					"  \"/test\")"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.getMountPath(\"/test\") "
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from openpyxl import load_workbook\r\n",
+					"\r\n",
+					"wb = load_workbook(mssparkutils.fs.getMountPath(\"/test\")+\"/Book1.xlsx\", read_only=False, keep_vba=True)\r\n",
+					"\r\n",
+					"print(wb.get_sheet_names())"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas\r\n",
+					"df = pandas.read_excel('abfss://excel@testfansynapseadlsgen2.dfs.core.windows.net/Book1.xlsx')\r\n",
+					"print(df)"
+				],
+				"execution_count": 8
+			}
+		]
+	}
+}

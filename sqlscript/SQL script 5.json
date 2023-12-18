@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 5",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [name]\n,[object_id]\n,[principal_id]\n,[schema_id]\n,[parent_object_id]\n,[type]\n,[type_desc]\n,[create_date]\n,[modify_date]\n,[is_ms_shipped]\n,[is_published]\n,[is_schema_published]\n FROM [sys].[all_objects]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "test",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

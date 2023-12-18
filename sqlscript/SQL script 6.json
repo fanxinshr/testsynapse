@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 6",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [name]\n,[database_id]\n,[source_database_id]\n,[owner_sid]\n,[create_date]\n,[compatibility_level]\n,[is_stale_page_detection_on]\n,[is_memory_optimized_enabled]\n,[is_data_retention_enabled]\n,[is_ledger_on]\n,[is_change_feed_enabled]\n,[catalog_collation_type]\n,[catalog_collation_type_desc]\n,[physical_database_name]\n,[is_result_set_caching_on]\n,[is_accelerated_database_recovery_on]\n,[is_tempdb_spill_to_remote_store]\n,[delayed_durability_desc]\n,[is_memory_optimized_elevate_to_snapshot_on]\n,[is_federation_member]\n,[is_remote_data_archive_enabled]\n,[is_mixed_page_allocation_on]\n,[is_temporal_history_retention_enabled]\n,[is_transform_noise_words_on]\n,[two_digit_year_cutoff]\n,[containment]\n,[containment_desc]\n,[target_recovery_time_in_seconds]\n,[delayed_durability]\n,[resource_pool_id]\n,[default_language_lcid]\n,[default_language_name]\n,[default_fulltext_language_lcid]\n,[default_fulltext_language_name]\n,[is_nested_triggers_on]\n,[is_date_correlation_on]\n,[is_cdc_enabled]\n,[is_encrypted]\n,[is_honor_broker_priority_on]\n,[replica_id]\n,[group_database_id]\n,[is_distributor]\n,[is_sync_with_backup]\n,[service_broker_guid]\n,[is_broker_enabled]\n,[log_reuse_wait]\n,[log_reuse_wait_desc]\n,[is_parameterization_forced]\n,[is_master_key_encrypted_by_server]\n,[is_query_store_on]\n,[is_published]\n,[is_subscribed]\n,[is_merge_published]\n,[is_recursive_triggers_on]\n,[is_cursor_close_on_commit_on]\n,[is_local_cursor_default]\n,[is_fulltext_enabled]\n,[is_trustworthy_on]\n,[is_db_chaining_on]\n,[is_ansi_padding_on]\n,[is_ansi_warnings_on]\n,[is_arithabort_on]\n,[is_concat_null_yields_null_on]\n,[is_numeric_roundabort_on]\n,[is_quoted_identifier_on]\n,[is_auto_create_stats_on]\n,[is_auto_create_stats_incremental_on]\n,[is_auto_update_stats_on]\n,[is_auto_update_stats_async_on]\n,[is_ansi_null_default_on]\n,[is_ansi_nulls_on]\n,[snapshot_isolation_state_desc]\n,[is_read_committed_snapshot_on]\n,[recovery_model]\n,[recovery_model_desc]\n,[page_verify_option]\n,[page_verify_option_desc]\n,[state]\n,[state_desc]\n,[is_in_standby]\n,[is_cleanly_shutdown]\n,[is_supplemental_logging_enabled]\n,[snapshot_isolation_state]\n,[collation_name]\n,[user_access]\n,[user_access_desc]\n,[is_read_only]\n,[is_auto_close_on]\n,[is_auto_shrink_on]\n FROM [sys].[databases]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "test",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

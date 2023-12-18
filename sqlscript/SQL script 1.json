@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "CREATE USER \"fanxin@microsoft.com\" FROM EXTERNAL PROVIDER; \n\nCREATE SCHEMA testschema;\n\n\n\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'Pa$$w0rd1234' ;\n\n-- Create a database scoped credential with Azure storage account key as the secret.\nCREATE DATABASE SCOPED CREDENTIAL AzureStorageCredential\nWITH\n  IDENTITY = 'fanxin' ,\n  SECRET = 'Pa$$w0rd1234' ;\n\n\n\n-- testsynapse12.dfs.core.windows.net\n\nCREATE EXTERNAL DATA SOURCE MyAzureStorage\nWITH\n  ( LOCATION = 'wasbs://test@testsynapse12.dfs.core.windows.net' ,\n    CREDENTIAL = AzureStorageCredential ,\n    TYPE = HADOOP\n  ) ;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "SynapseDedicatedSQLPool",
+				"poolName": "SynapseDedicatedSQLPool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
