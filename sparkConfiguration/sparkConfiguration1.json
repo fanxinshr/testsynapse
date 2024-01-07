@@ -2,15 +2,13 @@
 	"name": "sparkConfiguration1",
 	"properties": {
 		"configs": {
-			"autoBroadcastJoinThreshold": "-1"
+			"spark.task.cpus": "2"
 		},
-		"created": "2023-03-15T01:33:05.173Z",
+		"created": "2024-01-07T13:10:06.7260000+09:00",
 		"createdBy": "fanxin@microsoft.com",
-		"annotations": [
-			"test"
-		],
+		"annotations": [],
 		"configMergeRule": {
-			"artifact.currentOperation.autoBroadcastJoinThreshold": "replace"
+			"artifact.currentOperation.spark.task.cpus": "replace"
 		}
 	}
 }
