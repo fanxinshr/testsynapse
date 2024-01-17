@@ -4,36 +4,36 @@
 	"parameters": {
 		"workspaceName": {
 			"type": "string",
-			"metadata": "ワークスペース名",
+			"metadata": "Workspace name",
 			"defaultValue": "test-synapse1-fan"
 		},
 		"ADLSGen2Test_accountKey": {
 			"type": "secureString",
-			"metadata": "'ADLSGen2Test' の 'accountKey' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'accountKey' of 'ADLSGen2Test'"
 		},
 		"ADLSGen2Test2_accountKey": {
 			"type": "secureString",
-			"metadata": "'ADLSGen2Test2' の 'accountKey' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'accountKey' of 'ADLSGen2Test2'"
 		},
 		"AzureBlobStorage11_connectionString": {
 			"type": "secureString",
-			"metadata": "'AzureBlobStorage11' の 'connectionString' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage11'"
 		},
 		"AzureBlobStorage14_connectionString": {
 			"type": "secureString",
-			"metadata": "'AzureBlobStorage14' の 'connectionString' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage14'"
 		},
 		"AzureDataLakeStorage1_accountKey": {
 			"type": "secureString",
-			"metadata": "'AzureDataLakeStorage1' の 'accountKey' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
 		"AzureDataLakeStorage2_accountKey": {
 			"type": "secureString",
-			"metadata": "'AzureDataLakeStorage2' の 'accountKey' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage2'"
 		},
 		"test-synapse1-fan-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
-			"metadata": "'test-synapse1-fan-WorkspaceDefaultSqlServer' の 'connectionString' のセキュリティで保護された文字列",
+			"metadata": "Secure string for 'connectionString' of 'test-synapse1-fan-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:test-synapse1-fan.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
 		"ADLSGen2Test_properties_typeProperties_url": {
@@ -50,7 +50,7 @@
 		},
 		"AzureBlobStorage13_sasUri": {
 			"type": "secureString",
-			"metadata": "'AzureBlobStorage13' の 'sasUri' のセキュリティで保護された文字列"
+			"metadata": "Secure string for 'sasUri' of 'AzureBlobStorage13'"
 		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
@@ -187,6 +187,47 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/Dataflow1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Pipeline 3')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Spark job definition1",
+						"type": "SparkJob",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"sparkJob": {
+								"referenceName": "Spark job definition 1",
+								"type": "SparkJobDefinitionReference"
+							},
+							"conf": {
+								"spark.dynamicAllocation.enabled": null,
+								"spark.dynamicAllocation.minExecutors": null,
+								"spark.dynamicAllocation.maxExecutors": null
+							},
+							"numExecutors": null
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sparkJobDefinitions/Spark job definition 1')]"
 			]
 		},
 		{
@@ -7140,7 +7181,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "8622daa1-8340-4369-97d2-1dc6b85d55f9"
+						"spark.autotune.trackingId": "d52340ed-78bf-4ee8-be96-9946d3d9a7e8"
 					}
 				},
 				"metadata": {
@@ -7158,7 +7199,6 @@
 				"cells": [
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"import time\r\n",
 							"\r\n",
@@ -7397,15 +7437,13 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"configs": {
-					"autoBroadcastJoinThreshold": "-1"
+					"spark.task.cpus": "2"
 				},
-				"created": "2023-03-15T01:33:05.173Z",
+				"created": "2024-01-07T13:10:06.7260000+09:00",
 				"createdBy": "fanxin@microsoft.com",
-				"annotations": [
-					"test"
-				],
+				"annotations": [],
 				"configMergeRule": {
-					"artifact.currentOperation.autoBroadcastJoinThreshold": "replace"
+					"artifact.currentOperation.spark.task.cpus": "replace"
 				}
 			},
 			"dependsOn": []
@@ -7430,18 +7468,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SynapseDedicatedSQLPool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "ukwest"
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/testsparkpool')]",
@@ -7544,11 +7570,23 @@
 				"isComputeIsolationEnabled": false,
 				"sparkConfigProperties": {
 					"configurationType": "Artifact",
-					"filename": "sparkConfiguration2",
-					"content": "{\"name\":\"sparkConfiguration2\",\"properties\":{\"configs\":{\"spark.synapse.logAnalytics.enabled\":\"true\",\"spark.synapse.logAnalytics.workspaceId\":\"64967e6d-04df-4cb2-ad93-c82c2b44ba6f\",\"spark.synapse.logAnalytics.secret\":\"YV8b94k8pwRWNAUve9x0gYaGvKJ/hCoNwwBrExi59R9bf5DOwGRqqH00xeNSQJUqod0l1wTwx5gRleC6jnLtXg==\"},\"annotations\":[],\"type\":\"Microsoft.Synapse/workspaces/sparkconfigurations\",\"description\":\"\",\"notes\":\"\",\"created\":\"2023-10-30T23:29:27.1090000+09:00\",\"createdBy\":\"fanxin@microsoft.com\",\"configMergeRule\":{\"admin.currentOperation.spark.synapse.logAnalytics.enabled\":\"replace\",\"admin.currentOperation.spark.synapse.logAnalytics.workspaceId\":\"replace\",\"admin.currentOperation.spark.synapse.logAnalytics.secret\":\"replace\"}}}",
-					"time": "2023-10-30T14:31:12.5473627Z"
+					"filename": "sparkConfiguration1",
+					"content": "{\"name\":\"sparkConfiguration1\",\"properties\":{\"configs\":{\"spark.task.cpus\":\"2\"},\"annotations\":[],\"type\":\"Microsoft.Synapse/workspaces/sparkconfigurations\",\"description\":\"\",\"notes\":\"\",\"created\":\"2024-01-07T13:10:06.7260000+09:00\",\"createdBy\":\"fanxin@microsoft.com\",\"configMergeRule\":{\"admin.currentOperation.spark.task.cpus\":\"replace\"}}}",
+					"time": "2024-01-07T04:10:12.0778089Z"
 				},
 				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "ukwest"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SynapseDedicatedSQLPool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
 				"annotations": []
 			},
 			"dependsOn": [],
