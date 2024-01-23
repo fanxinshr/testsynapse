@@ -759,10 +759,10 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"targetBigDataPool": {
-					"referenceName": "testDotNt",
+					"referenceName": "testsparkpool",
 					"type": "BigDataPoolReference"
 				},
-				"requiredSparkVersion": "3.3",
+				"requiredSparkVersion": "3.2",
 				"language": "python",
 				"scanFolder": false,
 				"jobProperties": {
@@ -772,7 +772,7 @@
 						"spark.dynamicAllocation.enabled": "true",
 						"spark.dynamicAllocation.minExecutors": "4",
 						"spark.dynamicAllocation.maxExecutors": "19",
-						"spark.autotune.trackingId": "5380d3d8-1612-47db-b2cf-4e1b3b660ce3",
+						"spark.autotune.trackingId": "c374bd17-27b2-4675-8391-262d53351155",
 						"spark.synapse.context.sjdname": "Spark job definition 1"
 					},
 					"args": [
