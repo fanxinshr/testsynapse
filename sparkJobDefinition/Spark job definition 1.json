@@ -2,7 +2,7 @@
 	"name": "Spark job definition 1",
 	"properties": {
 		"targetBigDataPool": {
-			"referenceName": "testsparkpool",
+			"referenceName": "testmpool",
 			"type": "BigDataPoolReference"
 		},
 		"requiredSparkVersion": "3.2",
@@ -15,7 +15,7 @@
 				"spark.dynamicAllocation.enabled": "true",
 				"spark.dynamicAllocation.minExecutors": "4",
 				"spark.dynamicAllocation.maxExecutors": "19",
-				"spark.autotune.trackingId": "c374bd17-27b2-4675-8391-262d53351155",
+				"spark.autotune.trackingId": "b9e27823-e75b-4e91-b924-664421475661",
 				"spark.synapse.context.sjdname": "Spark job definition 1"
 			},
 			"args": [
