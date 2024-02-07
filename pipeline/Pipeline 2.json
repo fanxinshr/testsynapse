@@ -1,8 +1,0 @@
-{
-	"name": "Pipeline 2",
-	"properties": {
-		"annotations": [],
-		"lastPublishTime": "2023-08-14T01:01:37Z"
-	},
-	"type": "Microsoft.Synapse/workspaces/pipelines"
-}
