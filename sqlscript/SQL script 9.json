@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 9",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nCREATE DATABASE SCOPED CREDENTIAL datalakegen2\n    WITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = 'sp=racwdlmeop&st=2024-04-19T08:56:19Z&se=2024-05-03T16:56:19Z&spr=https&sv=2022-11-02&sr=c&sig=x0jclbfS3va8742%2BN2cDt4BCodPheJexQMDe5MSw6bg%3D';\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = '0419_testsynapse12_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [0419_testsynapse12_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://0419@testsynapse12.dfs.core.windows.net',\n\t\tCREDENTIAL = datalakegen2\n\t)\nGO\n\nCREATE EXTERNAL TABLE tableB (\n\t[FL_DATE] date,\n\t[DEP_DELAY] smallint,\n\t[ARR_DELAY] smallint,\n\t[AIR_TIME] smallint,\n\t[DISTANCE] smallint,\n\t[DEP_TIME] real,\n\t[ARR_TIME] real\n\t)\n\tWITH (\n\tLOCATION = 'Flights.parquet',\n\tDATA_SOURCE = [0419_testsynapse12_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM tableB\nGO\n\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = '23987hxJ#KL95234nl0zBe';",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "testserverless",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
